@@ -5,8 +5,7 @@ entre PostgreSQL (histórico: 2022-2024) y SQL Server (activo: 2025).
 El módulo expone utilidades para:
 - Validar reglas de negocio comunes antes de insertar.
 - Dirigir escrituras según el año de la venta.
-- Optimizar lecturas por año consultando solo el motor necesario.
-- Unificar consultas de ambos motores para construir un dataset único.
+- Unificar consultas de ambos motores.
 
 Las conexiones se parametrizan vía variables de entorno para evitar credenciales
 fijas en el código:
@@ -22,7 +21,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from datetime import date
-from typing import Dict, Iterable, List, Tuple
+from typing import Iterable, List, Tuple
 
 import psycopg2
 import pyodbc
@@ -92,15 +91,6 @@ class PartitionManager:
         if sale_date.year not in {2022, 2023, 2024, 2025}:
             raise ValueError("El año de la venta debe estar entre 2022 y 2025")
 
-    def _route_engine(self, year: int) -> str:
-        """Devuelve el motor esperado para el año indicado."""
-
-        if year in {2022, 2023, 2024}:
-            return "postgres"
-        if year == 2025:
-            return "sqlserver"
-        raise ValueError("Solo se admiten años 2022-2025")
-
     def insert_sale(self, sale_date: date, amount: float) -> None:
         """Inserta una venta en la base correcta según el año.
 
@@ -111,9 +101,7 @@ class PartitionManager:
 
         self._validate_sale(sale_date, amount)
 
-        engine = self._route_engine(sale_date.year)
-
-        if engine == "postgres":
+        if sale_date.year < 2025:
             self._insert_postgres_sale(sale_date, amount)
         else:
             self._insert_sqlserver_sale(sale_date, amount)
@@ -157,26 +145,6 @@ class PartitionManager:
 
         return sales
 
-    def fetch_sales_by_year(self, year: int) -> List[Tuple]:
-        """Consulta optimizada hacia el motor que corresponde al año dado."""
-
-        engine = self._route_engine(year)
-
-        if engine == "postgres":
-            with self.postgres_conn.cursor() as cur:
-                cur.execute(
-                    "SELECT venta_id, fecha_venta, monto FROM ventas_historicas WHERE EXTRACT(YEAR FROM fecha_venta) = %s",
-                    (year,),
-                )
-                return cur.fetchall()
-
-        with self.sqlserver_conn.cursor() as cur:
-            cur.execute(
-                "SELECT VentaID, FechaVenta, Monto FROM VentasActuales WHERE YEAR(FechaVenta) = ?",
-                year,
-            )
-            return cur.fetchall()
-
     def close(self) -> None:
         """Cierra ambas conexiones."""
 
@@ -193,26 +161,17 @@ class PartitionManager:
         self.close()
 
 
-def demo() -> Dict[str, List[Tuple]]:
+def demo() -> Iterable[Tuple]:
     """Ejecuta una demostración insertando datos de ambos rangos."""
 
     manager = PartitionManager()
     manager.insert_sale(date(2024, 12, 31), 1500.0)
     manager.insert_sale(date(2025, 1, 15), 2500.0)
-    # Lectura optimizada del histórico
-    historical = manager.fetch_sales_by_year(2024)
-    # Lectura unificada de todos los registros
     sales = manager.fetch_sales()
     manager.close()
-    return {"historical": historical, "all": sales}
+    return sales
 
 
 if __name__ == "__main__":
-    datasets = demo()
-    print("Historico 2024:")
-    for venta in datasets["historical"]:
-        print(venta)
-
-    print("\nTodos los registros:")
-    for venta in datasets["all"]:
+    for venta in demo():
         print(venta)

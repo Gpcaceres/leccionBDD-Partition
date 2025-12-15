@@ -1,11 +1,11 @@
 # Particionamiento lógico entre PostgreSQL y SQL Server
 
-Este ejemplo implementa la separación de datos históricos (2022-2024) y actuales (2025) usando motores heterogéneos mientras se mantiene la lógica de negocio consistente y obliga a que cada año viva en el motor definido por la arquitectura.
+Este ejemplo implementa la separación de datos históricos (2022-2024) y actuales (2025) usando motores heterogéneos mientras se mantiene la lógica de negocio consistente.
 
 ## Arquitectura
 - **Histórico (2022-2024):** PostgreSQL (`ventas_historicas`).
 - **Operacional (2025):** SQL Server (`VentasActuales`).
-- **Regla de partición:** 2022-2024 → PostgreSQL; 2025 → SQL Server.
+- **Regla de partición:** año < 2025 → PostgreSQL; año = 2025 → SQL Server.
 
 ## Estructura de tablas sugerida
 ```sql
@@ -37,4 +37,3 @@ python partition_manager.py
 2. Redirige la escritura al motor correcto según el año.
 3. Confirma la transacción o ejecuta rollback ante errores.
 4. `PartitionManager.fetch_sales` unifica resultados de ambas bases para exponer un único dataset.
-5. `PartitionManager.fetch_sales_by_year` consulta solo el motor relevante para optimizar lecturas históricas vs. actuales.
