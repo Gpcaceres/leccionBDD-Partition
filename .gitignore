@@ -1,3 +1,72 @@
-# .gitignore
-# Ignorar archivos .venv
+# Entornos virtuales de Python
 .venv/
+venv/
+env/
+ENV/
+
+# Archivos de Python compilados
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribución / empaquetado
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Configuración de IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Variables de entorno y credenciales
+.env
+.env.local
+*.env
+
+# Archivos de logs
+*.log
+logs/
+
+# Archivos de base de datos locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos de Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Archivos de macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Archivos de backup
+*.bak
+*.backup
+*.old
+*.orig
+
+# Archivos temporales
+*.tmp
+*.temp
+~$*
+
+# Archivos de Excel (si contienen datos sensibles)
+*.xlsx
+*.xls
+*.xlsm
+
+# Carpetas de pruebas
+test_output/
+temp/
+data/

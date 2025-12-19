@@ -1,2 +1,22 @@
+# ============================================================
+# DEPENDENCIAS DEL PROYECTO
+# Ministerio de Desarrollo Humano - Sistema de Créditos
+# ============================================================
+
+# psycopg2-binary: Conector para PostgreSQL
+# Permite conectarse y ejecutar consultas en bases de datos PostgreSQL
+# Usado para el repositorio histórico (2022-2024)
 psycopg2-binary
+
+# pyodbc: Conector para SQL Server
+# Permite conectarse a SQL Server usando ODBC Driver 17
+# Usado para el repositorio operacional (2025)
+# Prerrequisito: Tener instalado ODBC Driver 17 for SQL Server
+# Descarga: https://learn.microsoft.com/en-us/sql/connect/odbc/download-odbc-driver-for-sql-server
 pyodbc
+
+# pandas: Análisis de datos (opcional, para procesar Excel)
+# pandas
+
+# openpyxl: Leer archivos Excel (opcional)
+# openpyxl
